@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{LISTING_NAME}}</title>
+<style>
+  :root { color-scheme: dark; --bg:#141418; --card:#1d1d24; --line:#2c2c36; --fg:#e8e8ee; --dim:#9a9aa8; --accent:#7c6cff; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; background:var(--bg); color:var(--fg); }
+  main { max-width:760px; margin:0 auto; padding:48px 20px; }
+  h1 { margin:0 0 4px; font-size:28px; }
+  .sub { color:var(--dim); margin:0 0 28px; }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+  .btn { display:inline-block; padding:10px 18px; border-radius:8px; border:1px solid var(--line); background:var(--card);
+         color:var(--fg); text-decoration:none; font-weight:600; cursor:pointer; font-size:14px; }
+  .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .url { display:flex; gap:8px; margin-bottom:36px; }
+  .url input { flex:1; padding:9px 12px; border-radius:8px; border:1px solid var(--line); background:#0f0f13; color:var(--fg);
+               font:13px ui-monospace, Consolas, monospace; }
+  .pkg { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-bottom:12px; }
+  .pkg h2 { margin:0; font-size:17px; }
+  .pkg .meta { color:var(--dim); font:12px ui-monospace, Consolas, monospace; margin:2px 0 8px; }
+  .pkg p { margin:0; }
+  .pkg a { color:var(--accent); font-size:13px; }
+  footer { color:var(--dim); font-size:13px; margin-top:32px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>{{LISTING_NAME}}</h1>
+  <p class="sub">Набор редакторских тулов для Unity / VRChat. Ставится через VRChat Creator Companion.</p>
+
+  <div class="actions">
+    <a class="btn primary" id="add" href="#">Add to VCC</a>
+    <a class="btn" href="{{REPO_URL}}">GitHub</a>
+  </div>
+  <div class="url">
+    <input id="url" readonly value="{{LISTING_URL}}">
+    <button class="btn" id="copy">Копировать</button>
+  </div>
+
+  <div id="packages"></div>
+
+  <footer>Если кнопка не открывает VCC: Settings → Packages → Add Repository и вставь ссылку выше.</footer>
+</main>
+<script>
+  const listingUrl = "{{LISTING_URL}}";
+  document.getElementById("add").href = "vcc://vpm/addRepo?url=" + encodeURIComponent(listingUrl);
+  document.getElementById("copy").onclick = async (e) => {
+    try { await navigator.clipboard.writeText(listingUrl); e.target.textContent = "Скопировано"; }
+    catch { document.getElementById("url").select(); }
+  };
+
+  const cmp = (a, b) => {
+    const pa = a.split(/[.-]/), pb = b.split(/[.-]/);
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+      const x = parseInt(pa[i] ?? "0", 10), y = parseInt(pb[i] ?? "0", 10);
+      if (x !== y) return (isNaN(x) ? 0 : x) - (isNaN(y) ? 0 : y);
+    }
+    return 0;
+  };
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+
+  fetch("index.json", { cache: "no-store" }).then(r => r.json()).then(listing => {
+    const root = document.getElementById("packages");
+    const entries = Object.entries(listing.packages || {});
+    if (!entries.length) { root.innerHTML = "<p class='sub'>Пакетов пока нет.</p>"; return; }
+    for (const [name, pkg] of entries.sort()) {
+      const latest = Object.keys(pkg.versions).sort(cmp).pop();
+      const m = pkg.versions[latest];
+      const el = document.createElement("div");
+      el.className = "pkg";
+      el.innerHTML = `<h2>${esc(m.displayName || name)}</h2>
+        <div class="meta">${esc(name)} · v${esc(latest)}</div>
+        <p>${esc(m.description)}</p>
+        ${m.url ? `<a href="${esc(m.url)}">Скачать zip</a>` : ""}`;
+      root.appendChild(el);
+    }
+  }).catch(() => {});
+</script>
+</body>
+</html>

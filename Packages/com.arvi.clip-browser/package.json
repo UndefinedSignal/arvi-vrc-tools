@@ -1,0 +1,25 @@
+{
+  "name": "com.arvi.clip-browser",
+  "displayName": "[ArVi] Clip Browser",
+  "version": "1.0.0",
+  "unity": "2022.3",
+  "description": "Переключатель клипов для окна Animation: группы, превью, избранное, хоткеи Alt+↑/↓. Clip switcher for the Animation window.",
+  "keywords": [
+    "vrchat",
+    "animation",
+    "clips",
+    "editor"
+  ],
+  "author": {
+    "name": "ArVi (UndefinedSignal)",
+    "email": "arvinova@proton.me",
+    "url": "https://github.com/UndefinedSignal"
+  },
+  "license": "MIT",
+  "vpmDependencies": {},
+  "legacyFolders": {
+    "Assets\\Editor\\ClipBrowser": ""
+  },
+  "legacyFiles": {},
+  "changelogUrl": "https://github.com/UndefinedSignal/arvi-vrc-tools/blob/main/Packages/com.arvi.clip-browser/CHANGELOG.md"
+}

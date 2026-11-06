@@ -1,0 +1,25 @@
+{
+  "name": "com.arvi.blendtree-param-picker",
+  "displayName": "[ArVi] Blend Tree Param Picker",
+  "version": "1.0.0",
+  "unity": "2022.3",
+  "description": "Поиск по Float-параметрам в инспекторе Blend Tree: плоский список с фильтром вместо вложенных подменю. Search box for Blend Tree parameters.",
+  "keywords": [
+    "vrchat",
+    "animator",
+    "blend tree",
+    "editor"
+  ],
+  "author": {
+    "name": "ArVi (UndefinedSignal)",
+    "email": "arvinova@proton.me",
+    "url": "https://github.com/UndefinedSignal"
+  },
+  "license": "MIT",
+  "vpmDependencies": {},
+  "legacyFolders": {},
+  "legacyFiles": {
+    "Assets\\Editor\\BlendTreeParamPicker.cs": ""
+  },
+  "changelogUrl": "https://github.com/UndefinedSignal/arvi-vrc-tools/blob/main/Packages/com.arvi.blendtree-param-picker/CHANGELOG.md"
+}

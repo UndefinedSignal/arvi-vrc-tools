@@ -1,0 +1,6 @@
+dist/
+_site/
+_release/
+__pycache__/
+.DS_Store
+Thumbs.db

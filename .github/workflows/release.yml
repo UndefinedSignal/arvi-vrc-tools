@@ -1,0 +1,44 @@
+name: Release packages & publish VPM listing
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Packages/**"
+      - "source.json"
+      - "website/**"
+      - ".github/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: vpm-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Release new package versions
+        run: python3 .github/scripts/vpm.py release
+
+      - name: Build VPM listing
+        run: python3 .github/scripts/vpm.py listing --out _site
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
