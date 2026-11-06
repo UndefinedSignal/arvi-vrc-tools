@@ -17,6 +17,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 import zipfile
 from pathlib import Path
 
@@ -45,13 +46,16 @@ def zip_name(m):
 def build_zip(pkg_dir: Path, dest: Path):
     """Содержимое пакета кладётся в корень zip (так требует VPM)."""
     dest.parent.mkdir(parents=True, exist_ok=True)
+    stamp = time.localtime()[:6]
     with zipfile.ZipFile(dest, "w", zipfile.ZIP_DEFLATED) as z:
         for p in sorted(pkg_dir.rglob("*")):
             rel = p.relative_to(pkg_dir)
             if any(part.startswith(".") for part in rel.parts):
                 continue
-            # фиксированная дата — одинаковый вход даёт одинаковый zip
-            info = zipfile.ZipInfo(rel.as_posix() + ("/" if p.is_dir() else ""), (2020, 1, 1, 0, 0, 0))
+            # Дата = время сборки, НЕ фиксированная. Сборщик Unity (Bee) решает, пересобирать ли
+            # скрипты, по дате файла: с одинаковой датой у всех версий обновление пакета
+            # через VCC не перекомпилируется и Unity продолжает крутить старую версию.
+            info = zipfile.ZipInfo(rel.as_posix() + ("/" if p.is_dir() else ""), stamp)
             if p.is_dir():
                 info.external_attr = 0o40755 << 16
                 z.writestr(info, b"")
