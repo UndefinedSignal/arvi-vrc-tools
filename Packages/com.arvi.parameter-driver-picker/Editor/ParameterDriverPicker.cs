@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEditor.IMGUI.Controls;
@@ -42,7 +43,8 @@ namespace ArVi.EditorTools
 
         void OnEnable()
         {
-            if (InnerType != null) inner = CreateEditor(targets, InnerType);
+            // Контроллер ищем один раз при выделении (как и SDK), а не на каждой перерисовке.
+            if (targets.Length == 1 && target is VRCAvatarParameterDriver d) ResolveController(d);
         }
 
         void OnDisable()
@@ -51,15 +53,23 @@ namespace ArVi.EditorTools
             inner = null;
         }
 
+        // Инспектор SDK создаём только когда он реально нужен: его OnEnable тоже
+        // зовёт FindStateMachineBehaviourContext и сыплет ошибками от чужих контроллеров.
+        Editor Inner()
+        {
+            if (inner == null && InnerType != null) inner = CreateEditor(targets, InnerType);
+            return inner;
+        }
+
         public override void OnInspectorGUI()
         {
             bool multi = targets.Length > 1;
             bool useSdk = multi || EditorPrefs.GetBool(SdkInspectorKey, false);
 
-            if (useSdk && inner != null) inner.OnInspectorGUI();
+            if (useSdk && Inner() != null) inner.OnInspectorGUI();
             else DrawOwnInspector();
 
-            if (!multi && inner != null) DrawModeSwitch(useSdk);
+            if (!multi && InnerType != null) DrawModeSwitch(useSdk);
         }
 
         void DrawModeSwitch(bool useSdk)
@@ -331,11 +341,42 @@ namespace ArVi.EditorTools
         }
 
         // ---------- Контроллер ----------
+        //
+        // AnimatorController.FindStateMachineBehaviourContext обходит ВСЕ загруженные контроллеры
+        // и на каждом сломанном пишет ошибку в консоль. Поэтому: контроллер ищем один раз
+        // (и кэшируем), сначала сами в контроллере, открытом в окне Animator, — без логов,
+        // и только если там не нашли — один раз через FindStateMachineBehaviourContext.
+
+        bool contextSearched;
+        double nextWindowRetry;
+
+        void ResolveController(VRCAvatarParameterDriver driver)
+        {
+            if (controller != null) return;
+
+            var fromWindow = GetAnimatorWindowController();
+            if (fromWindow != null && ContainsBehaviour(fromWindow, driver))
+            {
+                controller = fromWindow;
+                return;
+            }
+
+            if (!contextSearched)
+            {
+                contextSearched = true;
+                var contexts = AnimatorController.FindStateMachineBehaviourContext(driver);
+                if (contexts != null && contexts.Length > 0) controller = contexts[0].animatorController;
+            }
+        }
 
         void RefreshParameters(VRCAvatarParameterDriver driver)
         {
-            var contexts = AnimatorController.FindStateMachineBehaviourContext(driver);
-            controller = contexts != null && contexts.Length > 0 ? contexts[0].animatorController : null;
+            // если не нашли — пробуем окно Animator не чаще раза в секунду (это без логов)
+            if (controller == null && EditorApplication.timeSinceStartup >= nextWindowRetry)
+            {
+                nextWindowRetry = EditorApplication.timeSinceStartup + 1.0;
+                ResolveController(driver);
+            }
 
             paramTypes.Clear();
             if (controller == null)
@@ -348,14 +389,52 @@ namespace ArVi.EditorTools
             sortedParams = ps.OrderBy(p => p.name, StringComparer.OrdinalIgnoreCase).ToArray();
         }
 
-        static Type FindType(string fullName)
+        static bool ContainsBehaviour(AnimatorController c, StateMachineBehaviour b)
+        {
+            foreach (var layer in c.layers)
+                if (layer.stateMachine != null && ContainsBehaviour(layer.stateMachine, b)) return true;
+            return false;
+        }
+
+        static bool ContainsBehaviour(AnimatorStateMachine sm, StateMachineBehaviour b)
+        {
+            if (Array.IndexOf(sm.behaviours, b) >= 0) return true;
+            foreach (var s in sm.states)
+                if (s.state != null && Array.IndexOf(s.state.behaviours, b) >= 0) return true;
+            foreach (var child in sm.stateMachines)
+                if (child.stateMachine != null && ContainsBehaviour(child.stateMachine, b)) return true;
+            return false;
+        }
+
+        static AnimatorController GetAnimatorWindowController()
+        {
+            try
+            {
+                var toolType = FindAnyType("UnityEditor.Graphs.AnimatorControllerTool");
+                if (toolType == null) return null;
+                const BindingFlags S = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+                const BindingFlags I = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+                object tool = toolType.GetField("tool", S)?.GetValue(null) ?? toolType.GetProperty("tool", S)?.GetValue(null);
+                if (tool == null) return null;
+                return toolType.GetProperty("animatorController", I)?.GetValue(tool) as AnimatorController;
+            }
+            catch { return null; }
+        }
+
+        static Type FindAnyType(string fullName)
         {
             foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
             {
                 var t = asm.GetType(fullName, false);
-                if (t != null && typeof(Editor).IsAssignableFrom(t)) return t;
+                if (t != null) return t;
             }
             return null;
+        }
+
+        static Type FindType(string fullName)
+        {
+            var t = FindAnyType(fullName);
+            return t != null && typeof(Editor).IsAssignableFrom(t) ? t : null;
         }
     }
 
