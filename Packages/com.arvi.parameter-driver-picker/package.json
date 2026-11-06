@@ -1,7 +1,7 @@
 {
   "name": "com.arvi.parameter-driver-picker",
   "displayName": "[ArVi] Parameter Driver Picker",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "unity": "2022.3",
   "description": "Поиск по параметрам в инспекторе VRC Avatar Parameter Driver: Destination и Source выбираются из плоского списка с фильтром вместо огромного попапа. Search box for Parameter Driver parameters.",
   "keywords": [
