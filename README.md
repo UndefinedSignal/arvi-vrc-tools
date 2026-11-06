@@ -5,6 +5,7 @@
 | Пакет | Что делает |
 |---|---|
 | [`com.arvi.blendtree-param-picker`](Packages/com.arvi.blendtree-param-picker) | **[ArVi] Blend Tree Param Picker** — поиск по Float-параметрам в инспекторе Blend Tree вместо вложенных подменю |
+| [`com.arvi.parameter-driver-picker`](Packages/com.arvi.parameter-driver-picker) | **[ArVi] Parameter Driver Picker** — поиск по параметрам в инспекторе VRC Avatar Parameter Driver (нужен VRChat Avatars SDK) |
 | [`com.arvi.clip-browser`](Packages/com.arvi.clip-browser) | **[ArVi] Clip Browser** — переключатель клипов для окна Animation: группы, превью, избранное, хоткеи |
 
 ## Установка через VCC

@@ -1,0 +1,25 @@
+{
+  "name": "com.arvi.parameter-driver-picker",
+  "displayName": "[ArVi] Parameter Driver Picker",
+  "version": "1.0.0",
+  "unity": "2022.3",
+  "description": "Поиск по параметрам в инспекторе VRC Avatar Parameter Driver: Destination и Source выбираются из плоского списка с фильтром вместо огромного попапа. Search box for Parameter Driver parameters.",
+  "keywords": [
+    "vrchat",
+    "animator",
+    "parameter driver",
+    "editor"
+  ],
+  "author": {
+    "name": "ArVi (UndefinedSignal)",
+    "email": "arvinova@proton.me",
+    "url": "https://github.com/UndefinedSignal"
+  },
+  "license": "MIT",
+  "vpmDependencies": {
+    "com.vrchat.avatars": ">=3.5.0"
+  },
+  "legacyFolders": {},
+  "legacyFiles": {},
+  "changelogUrl": "https://github.com/UndefinedSignal/arvi-vrc-tools/blob/main/Packages/com.arvi.parameter-driver-picker/CHANGELOG.md"
+}

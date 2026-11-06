@@ -1,0 +1,22 @@
+{
+    "name": "ArVi.ParameterDriverPicker.Editor",
+    "rootNamespace": "",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.vrchat.avatars",
+            "expression": "3.0.0",
+            "define": "ARVI_VRCSDK3A"
+        }
+    ],
+    "noEngineReferences": false
+}
